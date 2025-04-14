@@ -15,7 +15,7 @@ def leer_resumenes(csv_path):
 
 def generar_analisis(resumenes, modelo="mistral"):
     texto_resumenes = "\n\n".join(resumenes)
-    prompt = f"""Con base en los siguientes resúmenes de noticias del sector energético colombiano, redacta un análisis coherente de 2 páginas que identifique temas comunes, oportunidades, riesgos y tendencias relevantes para la toma de decisiones estratégicas de una empresa del sector:
+    prompt = f"""Con base en los siguientes resúmenes de noticias del sector energético colombiano, redacta un análisis coherente que identifique temas comunes, oportunidades, riesgos y tendencias relevantes para la toma de decisiones estratégicas:
 
 {texto_resumenes}
 
@@ -23,12 +23,11 @@ Análisis:"""
 
     resultado = subprocess.run(
         ["ollama", "run", modelo],
-        input=prompt,
-        capture_output=True,
-        text=True
+        input=prompt.encode("utf-8"),
+        capture_output=True
     )
 
-    return resultado.stdout.strip()
+    return resultado.stdout.decode("utf-8").strip()
 
 def guardar_en_word(texto, archivo="analisis_sector_energetico.docx"):
     doc = Document()
@@ -40,8 +39,9 @@ def guardar_en_word(texto, archivo="analisis_sector_energetico.docx"):
     return archivo
 
 def enviar_por_correo(archivo, destinatario):
-    emisor = "tu_correo@gmail.com"
-    contraseña = "tu_contraseña_de_aplicacion"
+    emisor = "juan20150235@gmail.com"
+    contraseña = "xlab pkti topu yyof"  # sin ñ ni tildes    xlab pkti topu yyof
+
 
     msg = EmailMessage()
     msg["Subject"] = "Análisis del Sector Energético"
@@ -50,7 +50,12 @@ def enviar_por_correo(archivo, destinatario):
     msg.set_content("Adjunto encontrarás el análisis generado a partir de las noticias recientes del sector energético.")
 
     with open(archivo, "rb") as f:
-        msg.add_attachment(f.read(), maintype="application", subtype="vnd.openxmlformats-officedocument.wordprocessingml.document", filename=archivo)
+        msg.add_attachment(
+            f.read(),
+            maintype="application",
+            subtype="vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename=archivo
+        )
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(emisor, contraseña)
@@ -61,5 +66,4 @@ if __name__ == "__main__":
     analisis = generar_analisis(resumenes)
     archivo_word = guardar_en_word(analisis)
     enviar_por_correo(archivo_word, "juan20150235@gmail.com")
-    print("📨 Análisis enviado correctamente.")
-    
+    print("📨 Análisis generado y enviado correctamente.")
